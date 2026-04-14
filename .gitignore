@@ -1,0 +1,11 @@
+node_modules/
+server/node_modules/
+client/node_modules/
+server/foodbridge.db
+server/foodbridge.db-shm
+server/foodbridge.db-wal
+server/uploads/*
+!server/uploads/.gitkeep
+dist/
+.env
+*.log
