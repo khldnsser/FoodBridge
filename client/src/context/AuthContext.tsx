@@ -1,16 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
-import api from '../api';
+import { supabase } from '../lib/supabase';
 import type { User } from '../types';
 
 interface AuthContextValue {
   user: User | null;
-  token: string | null;
   loading: boolean;
-  socket: Socket | null;
-  setToken: (t: string) => void;
-  setUser: (u: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -19,44 +14,51 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setTokenState] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
-  const [socket, setSocket] = useState<Socket | null>(null);
 
-  const setToken = (t: string) => {
-    localStorage.setItem('token', t);
-    setTokenState(t);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setTokenState(null);
-    setUser(null);
-    socket?.disconnect();
-    setSocket(null);
-  };
+  async function fetchProfile(userId: string) {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (data) setUser(data as User);
+  }
 
   const refreshUser = async () => {
-    const { data } = await api.get('/auth/me');
-    setUser(data.user);
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) await fetchProfile(authUser.id);
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   useEffect(() => {
-    if (!token) { setLoading(false); return; }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchProfile(session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
 
-    api.get('/auth/me').then(({ data }) => {
-      setUser(data.user);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setUser(null);
+      }
+    });
 
-      // Connect socket
-      const s = io('http://localhost:3001', { auth: { token }, transports: ['websocket'] });
-      setSocket(s);
-    }).catch(() => {
-      logout();
-    }).finally(() => setLoading(false));
-  }, [token]);
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, socket, setToken, setUser, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

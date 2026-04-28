@@ -38,6 +38,11 @@
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/* Dynamic viewport height — avoids the browser chrome shrinking layout */
+.min-h-dvh {
+  min-height: 100dvh;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

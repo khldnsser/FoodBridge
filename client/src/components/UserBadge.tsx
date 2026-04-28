@@ -1,4 +1,4 @@
-import { ShieldCheck, Phone, Store, User } from 'lucide-react';
+import { ShieldCheck, Store, User } from 'lucide-react';
 import type { User as UserType } from '../types';
 
 interface Props {
@@ -19,15 +19,11 @@ export default function UserBadge({ user, size = 'sm' }: Props) {
           <User size={10} /> Individual
         </span>
       )}
-      {user.id_verified ? (
+      {user.id_verified && (
         <span className={`${cls} bg-brand-100 text-brand-700`}>
           <ShieldCheck size={10} /> ID Verified
         </span>
-      ) : user.phone_verified ? (
-        <span className={`${cls} bg-blue-100 text-blue-700`}>
-          <Phone size={10} /> Phone Verified
-        </span>
-      ) : null}
+      )}
     </div>
   );
 }

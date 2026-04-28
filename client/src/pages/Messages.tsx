@@ -1,49 +1,95 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
-import api from '../api';
+import { MessageCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { Claim } from '../types';
 import { format, parseISO } from 'date-fns';
+import { resolveAssetUrl } from '../lib/assetUrl';
+import UserProfilePopup from '../components/UserProfilePopup';
+
+interface ClaimRow {
+  id: string;
+  listing_id: string;
+  claimer_id: string;
+  status: string;
+  pickup_confirmed_lister: boolean;
+  pickup_confirmed_claimer: boolean;
+  created_at: string;
+  listings: {
+    title: string;
+    user_id: string;
+    users: { name: string | null; photo: string | null };
+  };
+  users: { name: string | null; photo: string | null };
+}
 
 export default function Messages() {
   const navigate = useNavigate();
-  const { user, socket } = useAuth();
-  const [claims, setClaims] = useState<Claim[]>([]);
+  const { user } = useAuth();
+  const [claims, setClaims] = useState<ClaimRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const fetchClaims = async () => {
-    try {
-      const { data } = await api.get('/claims');
-      setClaims(data.claims);
-    } catch {} finally { setLoading(false); }
+    if (!user) return;
+
+    // First get user's own listing IDs so we can include them in the filter
+    const { data: myListings } = await supabase
+      .from('listings')
+      .select('id')
+      .eq('user_id', user.id);
+
+    const myListingIds = (myListings || []).map(l => l.id);
+
+    let query = supabase
+      .from('claims')
+      .select(`
+        id, listing_id, claimer_id, status,
+        pickup_confirmed_lister, pickup_confirmed_claimer, created_at,
+        listings ( title, user_id, users ( name, photo ) ),
+        users ( name, photo )
+      `)
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false });
+
+    if (myListingIds.length > 0) {
+      query = query.or(`claimer_id.eq.${user.id},listing_id.in.(${myListingIds.join(',')})`);
+    } else {
+      query = query.eq('claimer_id', user.id);
+    }
+
+    const { data } = await query;
+    if (data) setClaims(data as unknown as ClaimRow[]);
+    setLoading(false);
   };
 
-  useEffect(() => { fetchClaims(); }, []);
+  useEffect(() => { fetchClaims(); }, [user]);
 
+  // Realtime: refresh on new message/claim update
   useEffect(() => {
-    if (!socket) return;
-    socket.on('notification', () => fetchClaims());
-    return () => { socket.off('notification'); };
-  }, [socket]);
+    if (!user) return;
+    const channel = supabase
+      .channel('messages-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchClaims)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'claims' }, fetchClaims)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 max-w-lg mx-auto">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <div className="bg-white sticky top-0 z-30 shadow-sm">
-        <div className="px-4 py-4 flex items-center gap-3">
-          <button onClick={() => navigate('/home')} className="p-2 rounded-full hover:bg-gray-100">
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="font-bold text-gray-900">Messages</h1>
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+          <h1 className="font-bold text-xl text-gray-900">Messages</h1>
         </div>
       </div>
 
-      <div className="px-4 py-4">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
         {loading ? (
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="card p-4 flex items-center gap-3 animate-pulse">
-                <div className="w-12 h-12 bg-gray-200 rounded-full" />
+                <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-1/2" />
                   <div className="h-3 bg-gray-200 rounded w-3/4" />
@@ -58,30 +104,45 @@ export default function Messages() {
             <p className="text-sm text-gray-400">When you claim or share food, your chats appear here</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {claims.map(claim => {
-              const isLister = claim.is_lister;
-              const other = claim.other_user;
+              const isLister = claim.listings?.user_id === user?.id;
+              const other = isLister ? claim.users : claim.listings?.users;
               const bothConfirmed = claim.pickup_confirmed_lister && claim.pickup_confirmed_claimer;
+
+              const otherUserId = isLister ? claim.claimer_id : claim.listings?.user_id;
 
               return (
                 <div key={claim.id} onClick={() => navigate(`/chat/${claim.id}`)}
-                  className="card p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform">
-                  {other?.photo ? (
-                    <img src={other.photo} className="w-12 h-12 rounded-full object-cover flex-shrink-0" alt="" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-brand-100 flex-shrink-0 flex items-center justify-center text-lg font-bold text-brand-700">
-                      {other?.name?.[0] || '?'}
-                    </div>
-                  )}
+                  className="card p-4 flex items-center gap-3 cursor-pointer hover:shadow-md active:scale-[0.98] transition-all">
+                  {/* Avatar — clicking opens user profile popup */}
+                  <button
+                    className="flex-shrink-0 focus:outline-none"
+                    onClick={e => { e.stopPropagation(); if (otherUserId) setSelectedUserId(otherUserId); }}
+                    aria-label={`View ${other?.name || 'user'}'s profile`}
+                  >
+                    {other?.photo ? (
+                      <img src={resolveAssetUrl(other.photo)} className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-brand-400 transition-all" alt="" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-lg font-bold text-brand-700 hover:ring-2 hover:ring-brand-400 transition-all">
+                        {other?.name?.[0] || '?'}
+                      </div>
+                    )}
+                  </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="font-semibold text-gray-900 text-sm truncate">{other?.name || 'Unknown'}</span>
+                      {/* Name — clicking also opens popup */}
+                      <button
+                        className="font-semibold text-gray-900 text-sm truncate hover:text-brand-600 transition-colors focus:outline-none"
+                        onClick={e => { e.stopPropagation(); if (otherUserId) setSelectedUserId(otherUserId); }}
+                      >
+                        {other?.name || 'Unknown'}
+                      </button>
                       <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
                         {format(parseISO(claim.created_at), 'MMM d')}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{claim.title}</p>
+                    <p className="text-xs text-gray-500 truncate">{claim.listings?.title}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`badge text-[10px] ${isLister ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'}`}>
                         {isLister ? 'You shared' : 'You claimed'}
@@ -99,23 +160,7 @@ export default function Messages() {
         )}
       </div>
 
-      {/* Bottom nav tabs */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 max-w-lg mx-auto">
-        <div className="flex items-center justify-around h-16">
-          {[
-            { to: '/home', icon: '🏠', label: 'Home' },
-            { to: '/create', icon: '➕', label: 'Share' },
-            { to: '/messages', icon: '💬', label: 'Messages', active: true },
-            { to: '/profile', icon: '👤', label: 'Profile' },
-          ].map(tab => (
-            <button key={tab.to} onClick={() => navigate(tab.to)}
-              className={`flex flex-col items-center gap-0.5 px-4 py-2 ${tab.active ? 'text-brand-600' : 'text-gray-400'}`}>
-              <span className="text-xl">{tab.icon}</span>
-              <span className="text-[10px] font-medium">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      <UserProfilePopup userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
     </div>
   );
 }

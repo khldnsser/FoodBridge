@@ -1,87 +1,104 @@
+require('dotenv').config();
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
 const cors = require('cors');
-const path = require('path');
-const cron = require('node-cron');
-const jwt = require('jsonwebtoken');
-const { db } = require('./db');
-const { JWT_SECRET } = require('./middleware/auth');
-const { v4: uuid } = require('uuid');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: 'http://localhost:5173', credentials: true }
-});
 
-app.set('io', io);
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+
+const adminSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
+const ALLOWED_ORIGINS = (process.env.CLIENT_URLS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map((v) => v.trim())
+  .filter(Boolean);
+
+const allowedOrigins = ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : DEFAULT_ALLOWED_ORIGINS;
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    // Allow local network Vite URLs in development for phone testing.
+    if (process.env.NODE_ENV !== 'production' && /^http:\/\/192\.168\./.test(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked origin: ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/listings', require('./routes/listings'));
-app.use('/api/claims', require('./routes/claims'));
-app.use('/api/messages', require('./routes/messages'));
-app.use('/api', require('./routes/misc'));
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'admin-api' });
+});
 
-// Socket.io — real-time chat + notifications
-io.use((socket, next) => {
-  const token = socket.handshake.auth?.token;
-  if (!token) return next(new Error('No token'));
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    socket.userId = decoded.id;
-    next();
-  } catch {
-    next(new Error('Invalid token'));
+app.get('/api/health/supabase', async (_req, res) => {
+  const { error } = await adminSupabase
+    .from('users')
+    .select('id', { count: 'exact', head: true });
+
+  if (error) {
+    return res.status(503).json({ ok: false, service: 'supabase', error: error.message });
   }
+
+  return res.json({ ok: true, service: 'supabase' });
 });
 
-io.on('connection', (socket) => {
-  socket.join(`user:${socket.userId}`);
-  console.log(`[WS] User ${socket.userId} connected`);
+// Verify Supabase JWT and check is_admin
+async function requireAdmin(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
-  socket.on('join-claim', (claimId) => {
-    socket.join(`claim:${claimId}`);
-  });
+  const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data: { user }, error } = await anonClient.auth.getUser(token);
+  if (error || !user) return res.status(401).json({ error: 'Invalid token' });
 
-  socket.on('leave-claim', (claimId) => {
-    socket.leave(`claim:${claimId}`);
-  });
+  const { data: profile } = await adminSupabase
+    .from('users')
+    .select('is_admin, is_suspended')
+    .eq('id', user.id)
+    .single();
 
-  socket.on('disconnect', () => {
-    console.log(`[WS] User ${socket.userId} disconnected`);
-  });
-});
+  if (!profile?.is_admin) return res.status(403).json({ error: 'Forbidden' });
+  if (profile?.is_suspended) return res.status(403).json({ error: 'Account suspended' });
 
-// Cron: auto-delist expired items every hour
-cron.schedule('0 * * * *', () => {
-  const now = new Date().toISOString().split('T')[0];
-  const expired = db.prepare("SELECT * FROM listings WHERE status = 'active' AND expiry_date < ?").all(now);
-
-  for (const listing of expired) {
-    db.prepare("UPDATE listings SET status = 'expired' WHERE id = ?").run(listing.id);
-    db.prepare('INSERT INTO notifications (id, user_id, type, title, body, data) VALUES (?, ?, ?, ?, ?, ?)').run(
-      uuid(), listing.user_id, 'expired',
-      'Listing expired',
-      `Your listing "${listing.title}" has been removed — the item has passed its expiry date.`,
-      JSON.stringify({ listing_id: listing.id })
-    );
-    console.log(`[CRON] Expired listing: ${listing.id} — ${listing.title}`);
-  }
-});
-
-// Also run expiry check on startup
-const expiredOnStart = db.prepare("SELECT * FROM listings WHERE status = 'active' AND expiry_date < ?").all(new Date().toISOString().split('T')[0]);
-for (const listing of expiredOnStart) {
-  db.prepare("UPDATE listings SET status = 'expired' WHERE id = ?").run(listing.id);
+  req.userId = user.id;
+  next();
 }
 
+// PATCH /api/admin/users/:id — suspend/unsuspend/verify_id/reject_id
+app.patch('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+
+  const updates = {
+    suspend:   { is_suspended: true },
+    unsuspend: { is_suspended: false },
+    verify_id: { id_verified: true, id_doc_status: 'approved' },
+    reject_id: { id_doc_status: 'rejected' },
+  };
+
+  if (!updates[action]) return res.status(400).json({ error: 'Unknown action' });
+
+  const { error } = await adminSupabase.from('users').update(updates[action]).eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`\n🌱 FoodBridge server running on http://localhost:${PORT}`);
-  console.log(`   Admin: register first — first account gets admin access\n`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`\n🌱 FoodBridge admin server on http://localhost:${PORT}`);
 });
