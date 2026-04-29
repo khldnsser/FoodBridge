@@ -43,7 +43,7 @@ const NEIGHBORHOODS = ['Hamra', 'Gemmayzeh', 'Ashrafieh', 'Mar Mikhael', 'Verdun
 
 const LISTING_DATA = [
   // original_price = supermarket value; listing_price = 0 means free
-  { title: 'Sealed Greek yoghurt (500g)', description: 'Unopened Fage yoghurt, bought too many. Still has 10 days until expiry. Great for breakfast or cooking.', categories: ['Dairy'], dietary_tags: ['Vegetarian'],     photos: ['images/greek-yoghurt-tub.png'], original_price: 4.50, listing_price: 0 },
+  { title: 'Sealed Greek yoghurt (500g)', description: 'Unopened Fage yoghurt, bought too many. Still has 10 days until expiry. Great for breakfast or cooking.', categories: ['Dairy'], dietary_tags: ['Vegetarian'], photos: ['images/greek-yoghurt-tub.png'], original_price: 4.50, listing_price: 0, lister_username: 'test5' },
   { title: 'Canned chickpeas × 4', description: 'Surplus from a bulk buy. All sealed, best before 2026. Perfect for hummus or curries.', categories: ['Canned goods'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free'],     photos: ['images/canned-chickpeas.png'], original_price: 6.00, listing_price: 0 },
   { title: 'Penne pasta 1kg (unopened)', description: 'De Cecco brand. Just moved and bought duplicates. High quality Italian pasta.', categories: ['Boxed meals & pasta'], dietary_tags: ['Vegetarian'],     photos: ['images/penne-pasta-box.png'], original_price: 5.50, listing_price: 1.00 },
   { title: 'Brioche loaf (sealed)', description: 'Picked up by mistake — we don\'t eat white bread. Still fully sealed, best before in 4 days.', categories: ['Bread & bakery'], dietary_tags: ['Vegetarian'],     photos: ['images/loaf.png'], original_price: 3.50, listing_price: 0 },
@@ -59,11 +59,11 @@ const LISTING_DATA = [
   { title: 'Cherry tomatoes 500g (red)', description: 'Juicy red cherry tomatoes, still on the vine. Bought too many for the week. Great for salads or roasting.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'],     photos: ['images/cherry-tomatoes-red.jpg'], original_price: 3.50, listing_price: 0 },
   { title: 'Fresh produce box (mixed)', description: 'Assorted vegetables from this morning\'s market run — we over-ordered. All fresh, nothing pre-cut.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'],     photos: ['images/fresh-produce-box.jpg'], original_price: 15.00, listing_price: 3.00 },
   { title: 'Yellow cherry tomatoes (sealed tub)', description: 'Sweet yellow cherry tomatoes in a sealed store container. Perfect for snacking or salads. Expires in 3 days.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/yellow-cherry-tomatoes.jpg'], original_price: 4.00, listing_price: 0 },
-  { title: 'Bananas 1kg (fresh bunch)', description: 'Ripe bananas, bought too many this week. Great for smoothies or snacking.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/banana-1kg.jpg'], original_price: 2.50, listing_price: 0 },
-  { title: 'BBQ Sauce (sealed bottle)', description: 'Unopened BBQ sauce, bought as part of a set we don\'t need. Perfect for grilling or dipping.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal'], photos: ['images/BBQ-Sauce.jpg', 'images/BBQ-Sauce-exp.jpg'], original_price: 5.00, listing_price: 0 },
-  { title: 'Milk gallon (sealed)', description: 'Full gallon of fresh milk, sealed and unopened. Bought extra by mistake.', categories: ['Dairy'], dietary_tags: ['Vegetarian', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/Milk-gallon.jpg', 'images/Milk-gallon-exp.jpg'], original_price: 6.00, listing_price: 0 },
-  { title: 'Sugar bag 1kg (sealed)', description: 'Sealed bag of white sugar. Got two bags when ordering groceries online — giving one away.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/Sugar-bag.jpg', 'images/Sugar-bag-exp.jpg'], original_price: 3.00, listing_price: 0 },
-  { title: 'Canned tuna (sealed)', description: 'Sealed tuna cans, great for salads or sandwiches. Long shelf life remaining.', categories: ['Canned goods'], dietary_tags: ['Halal', 'Gluten-free', 'Nut-free'], photos: ['images/tuna.jpg', 'images/tuna-exp.jpeg'], original_price: 4.50, listing_price: 0 },
+  { title: 'Bananas 1kg (fresh bunch)', description: 'Ripe bananas, bought too many this week. Great for smoothies or snacking.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/banana-1kg.jpg'], original_price: 2.50, listing_price: 1.75 },
+  { title: 'BBQ Sauce (sealed bottle)', description: 'Unopened BBQ sauce, bought as part of a set we don\'t need. Perfect for grilling or dipping.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal'], photos: ['images/BBQ-Sauce.jpg', 'images/BBQ-Sauce-exp.jpg'], original_price: 5.00, listing_price: 3.25, lister_username: 'test11' },
+  { title: 'Milk gallon (sealed)', description: 'Full gallon of fresh milk, sealed and unopened. Bought extra by mistake.', categories: ['Dairy'], dietary_tags: ['Vegetarian', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/Milk-gallon.jpg', 'images/Milk-gallon-exp.jpg'], original_price: 6.00, listing_price: 3.60 },
+  { title: 'Sugar bag 1kg (sealed)', description: 'Sealed bag of white sugar. Got two bags when ordering groceries online — giving one away.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], photos: ['images/Sugar-bag.jpg', 'images/Sugar-bag-exp.jpg'], original_price: 3.00, listing_price: 2.00 },
+  { title: 'Canned tuna (sealed)', description: 'Sealed tuna cans, great for salads or sandwiches. Long shelf life remaining.', categories: ['Canned goods'], dietary_tags: ['Halal', 'Gluten-free', 'Nut-free'], photos: ['images/tuna.jpg', 'images/tuna-exp.jpeg'], original_price: 4.50, listing_price: 2.50 },
 ];
 
 const MESSAGES = [
@@ -171,8 +171,10 @@ async function run() {
   const insertedListings = [];
 
   for (let i = 0; i < LISTING_DATA.length; i++) {
-    const lister = listers[i % listers.length];
     const ld = LISTING_DATA[i];
+    const lister = ld.lister_username
+      ? createdUsers.find(u => u.username === ld.lister_username) || listers[i % listers.length]
+      : listers[i % listers.length];
     const nbhood = lister.neighborhood;
     const daysMin = i < 3 ? 1 : 2;  // first few urgent
 
