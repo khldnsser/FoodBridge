@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Camera, MapPin, X, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, MapPin, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { CATEGORIES, DIETARY_TAGS, STORAGE_CONDITIONS } from '../types';
+import { CATEGORIES, DIETARY_TAGS } from '../types';
 import { differenceInDays } from 'date-fns';
 import { resolveAssetUrl } from '../lib/assetUrl';
 
-type Step = 'photo' | 'details' | 'storage' | 'location' | 'review';
+type Step = 'photo' | 'details' | 'location' | 'review';
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ export default function CreateListing() {
   const [description, setDescription] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
-  const [storage, setStorage] = useState('');
   const [dietary, setDietary] = useState<string[]>([]);
   const [address, setAddress] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
@@ -33,9 +32,9 @@ export default function CreateListing() {
   const [loading, setLoading] = useState(false);
   const [locLoading, setLocLoading] = useState(false);
 
-  const steps: Step[] = ['photo', 'details', 'storage', 'location', 'review'];
+  const steps: Step[] = ['photo', 'details', 'location', 'review'];
   const stepIdx = steps.indexOf(step);
-  const stepLabels = ['Photo', 'Details', 'Storage', 'Location', 'Review'];
+  const stepLabels = ['Photo', 'Details', 'Location', 'Review'];
 
   function addPhotos(files: FileList | null) {
     if (!files) return;
@@ -75,7 +74,6 @@ export default function CreateListing() {
       if (new Date(expiryDate) <= new Date()) { setError('Expiry date must be in the future'); return false; }
       if (categories.length === 0) { setError('Select at least one category'); return false; }
     }
-    if (step === 'storage' && !storage) { setError('Select a storage condition'); return false; }
     if (step === 'location' && !address.trim()) { setError('Pickup address required'); return false; }
     return true;
   }
@@ -110,7 +108,6 @@ export default function CreateListing() {
         photos: uploadedUrls,
         expiry_date: expiryDate,
         categories,
-        storage_condition: storage,
         pickup_address: address.trim(),
         pickup_lat: lat,
         pickup_lng: lng,
@@ -271,28 +268,8 @@ export default function CreateListing() {
                   </div>
                 </div>
               </div>
-              {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-            </div>
-          )}
-
-          {/* STEP 3: Storage + Dietary */}
-          {step === 'storage' && (
-            <div>
-              <h2 className="text-xl font-bold mb-6">Storage & diet</h2>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">Storage condition *</label>
-                <div className="space-y-2">
-                  {STORAGE_CONDITIONS.map(s => (
-                    <button key={s.value} onClick={() => setStorage(s.value)}
-                      className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${storage === s.value ? 'border-brand-500 bg-brand-50' : 'border-gray-200'}`}>
-                      <span className="text-2xl">{s.icon}</span>
-                      <span className="font-medium text-gray-900">{s.label}</span>
-                      {storage === s.value && <CheckCircle size={18} className="ml-auto text-brand-600" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
+              {/* Dietary attributes */}
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Dietary attributes</label>
                 <div className="flex flex-wrap gap-2">
                   {DIETARY_TAGS.map(tag => (
@@ -307,7 +284,7 @@ export default function CreateListing() {
             </div>
           )}
 
-          {/* STEP 4: Location */}
+          {/* STEP 3: Location */}
           {step === 'location' && (
             <div>
               <h2 className="text-xl font-bold mb-2">Pickup location</h2>
@@ -344,7 +321,6 @@ export default function CreateListing() {
                   {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
                   <div className="mt-3 space-y-1 text-sm text-gray-600">
                     <p>📅 Expires: <span className="font-medium">{new Date(expiryDate).toLocaleDateString()}</span></p>
-                    <p>📦 {STORAGE_CONDITIONS.find(s => s.value === storage)?.icon} {STORAGE_CONDITIONS.find(s => s.value === storage)?.label}</p>
                     <p>📍 {address}{neighborhood && ` · ${neighborhood}`}</p>
                   </div>
                   {categories.length > 0 && (

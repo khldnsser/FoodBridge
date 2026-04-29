@@ -28,7 +28,7 @@ export interface Listing {
   photos: string[];
   expiry_date: string;
   categories: string[];
-  storage_condition: 'room_temperature' | 'frozen';
+  storage_condition?: string;
   pickup_address: string;
   pickup_lat: number | null;
   pickup_lng: number | null;
@@ -93,11 +93,5 @@ export interface Rating {
   users?: { name: string | null; photo: string | null };
 }
 
-export type StorageCondition = 'room_temperature' | 'frozen';
-
 export const CATEGORIES = ['Dairy', 'Canned goods', 'Snacks', 'Bread & bakery', 'Boxed meals & pasta', 'Beverages', 'Other'] as const;
 export const DIETARY_TAGS = ['Halal', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut-free'] as const;
-export const STORAGE_CONDITIONS: { value: StorageCondition; label: string; icon: string }[] = [
-  { value: 'room_temperature', label: 'Room temperature', icon: '🌡️' },
-  { value: 'frozen', label: 'Frozen', icon: '🧊' },
-];

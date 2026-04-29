@@ -5,7 +5,6 @@ import { format, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { StarPicker } from '../components/StarRating';
-import { STORAGE_CONDITIONS } from '../types';
 import { resolveAssetUrl } from '../lib/assetUrl';
 
 interface ClaimDetail {
@@ -21,7 +20,6 @@ interface ClaimDetail {
     title: string;
     photos: string[];
     expiry_date: string;
-    storage_condition: string;
     user_id: string;
     pickup_address: string;
   };
@@ -60,7 +58,7 @@ export default function Chat() {
         .select(`id, listing_id, claimer_id, status,
           pickup_confirmed_lister, pickup_confirmed_claimer,
           rated_by_lister, rated_by_claimer,
-          listings ( title, photos, expiry_date, storage_condition, user_id, pickup_address ),
+          listings ( title, photos, expiry_date, user_id, pickup_address ),
           users ( name, photo )`)
         .eq('id', claimId)
         .single(),
@@ -172,8 +170,6 @@ export default function Chat() {
   const myConfirmed = isLister ? claim.pickup_confirmed_lister : claim.pickup_confirmed_claimer;
   const otherConfirmed = isLister ? claim.pickup_confirmed_claimer : claim.pickup_confirmed_lister;
   const canRate = isComplete && !rated && !(isLister ? claim.rated_by_lister : claim.rated_by_claimer);
-  const storage = STORAGE_CONDITIONS.find(s => s.value === listing?.storage_condition);
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row pb-16 md:pb-0">
 
@@ -200,7 +196,6 @@ export default function Chat() {
             <p className="font-bold text-gray-900 text-base leading-snug">{listing.title}</p>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1.5 flex-wrap">
               <span>📅 {new Date(listing.expiry_date).toLocaleDateString()}</span>
-              {storage && <span>{storage.icon} {storage.label}</span>}
             </div>
           </div>
 
@@ -266,7 +261,6 @@ export default function Chat() {
               <p className="font-semibold text-sm text-gray-900 truncate">{listing.title}</p>
               <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                 <span>📅 {new Date(listing.expiry_date).toLocaleDateString()}</span>
-                {storage && <span>{storage.icon} {storage.label}</span>}
               </div>
             </div>
             {isComplete ? (

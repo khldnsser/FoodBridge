@@ -5,7 +5,6 @@ import { differenceInDays, parseISO, format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import type { Listing } from '../types';
-import { STORAGE_CONDITIONS } from '../types';
 import UserBadge from '../components/UserBadge';
 import { StarDisplay } from '../components/StarRating';
 import { SinglePinMap } from '../components/ListingMap';
@@ -88,7 +87,6 @@ export default function ListingDetail() {
   const daysLeft = differenceInDays(parseISO(listing.expiry_date), new Date());
   const isUrgent = daysLeft <= 2;
   const isOwn = listing.user_id === user?.id;
-  const storage = STORAGE_CONDITIONS.find(s => s.value === listing.storage_condition);
   const REPORT_CATS = ['Item appears unsealed or tampered', 'Expiry date appears incorrect', 'No-show / pickup not completed', 'Inappropriate content', 'Other'];
 
   // ── Shared photo carousel ────────────────────────────────────────────────
@@ -184,11 +182,6 @@ export default function ListingDetail() {
       })()}
 
       <div className="flex flex-wrap gap-2">
-        {storage && (
-          <span className="badge bg-blue-50 text-blue-700 border border-blue-100 text-xs px-3 py-1">
-            {storage.icon} {storage.label}
-          </span>
-        )}
         {listing.dietary_tags.map(tag => (
           <span key={tag} className="badge bg-brand-50 text-brand-700 border border-brand-100 text-xs px-3 py-1">{tag}</span>
         ))}

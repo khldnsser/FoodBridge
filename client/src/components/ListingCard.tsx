@@ -13,11 +13,6 @@ export default function ListingCard({ listing }: Props) {
   const daysLeft = differenceInDays(parseISO(listing.expiry_date), new Date());
   const isUrgent = daysLeft <= 2;
 
-  const storageLabel: Record<string, string> = {
-    room_temperature: '🌡️ Room temp',
-    frozen: '🧊 Frozen',
-  };
-
   // Support both RPC flat fields and joined user object
   const listerName = listing.lister_name ?? (listing as any).user?.name;
   const listerPhoto = listing.lister_photo ?? (listing as any).user?.photo;
@@ -57,7 +52,7 @@ export default function ListingCard({ listing }: Props) {
             <MapPin size={11} />
             {listing.distance_km != null ? `${listing.distance_km.toFixed(1)} km` : listing.neighborhood || 'Nearby'}
           </span>
-          <span>{storageLabel[listing.storage_condition] || listing.storage_condition}</span>
+          <span>{listing.neighborhood || 'Nearby'}</span>
         </div>
 
         {/* Price display */}
