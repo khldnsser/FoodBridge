@@ -15,7 +15,6 @@ export default function ListingCard({ listing }: Props) {
 
   const storageLabel: Record<string, string> = {
     room_temperature: '🌡️ Room temp',
-    refrigerated: '❄️ Refrigerated',
     frozen: '🧊 Frozen',
   };
 

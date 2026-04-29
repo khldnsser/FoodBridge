@@ -39,7 +39,7 @@ create table public.listings (
   expiry_date       date not null,
   categories        text[] not null default '{}',
   storage_condition text not null default 'room_temperature'
-    check (storage_condition in ('room_temperature','refrigerated','frozen')),
+    check (storage_condition in ('room_temperature','frozen')),
   pickup_address    text not null default '',
   pickup_lat        numeric,
   pickup_lng        numeric,

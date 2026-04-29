@@ -43,7 +43,7 @@ const NEIGHBORHOODS = ['Hamra', 'Gemmayzeh', 'Ashrafieh', 'Mar Mikhael', 'Verdun
 
 const LISTING_DATA = [
   // original_price = supermarket value; listing_price = 0 means free
-  { title: 'Sealed Greek yoghurt (500g)', description: 'Unopened Fage yoghurt, bought too many. Still has 10 days until expiry. Great for breakfast or cooking.', categories: ['Dairy'], dietary_tags: ['Vegetarian'], storage_condition: 'refrigerated',
+  { title: 'Sealed Greek yoghurt (500g)', description: 'Unopened Fage yoghurt, bought too many. Still has 10 days until expiry. Great for breakfast or cooking.', categories: ['Dairy'], dietary_tags: ['Vegetarian'], storage_condition: 'room_temperature',
     photos: ['images/greek-yoghurt-tub.png'], original_price: 4.50, listing_price: 0 },
   { title: 'Canned chickpeas × 4', description: 'Surplus from a bulk buy. All sealed, best before 2026. Perfect for hummus or curries.', categories: ['Canned goods'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free'], storage_condition: 'room_temperature',
     photos: ['images/canned-chickpeas.png'], original_price: 6.00, listing_price: 0 },
@@ -51,55 +51,30 @@ const LISTING_DATA = [
     photos: ['images/penne-pasta-box.png'], original_price: 5.50, listing_price: 1.00 },
   { title: 'Brioche loaf (sealed)', description: 'Picked up by mistake — we don\'t eat white bread. Still fully sealed, best before in 4 days.', categories: ['Bread & bakery'], dietary_tags: ['Vegetarian'], storage_condition: 'room_temperature',
     photos: ['images/loaf.png'], original_price: 3.50, listing_price: 0 },
-  { title: 'Almond milk 1L (unopened)', description: 'Oatly oat milk, bought wrong type. Refrigerated, unopened. Great for coffee or cereal.', categories: ['Beverages'], dietary_tags: ['Vegan', 'Gluten-free', 'Nut-free'], storage_condition: 'refrigerated',
+  { title: 'Almond milk 1L (unopened)', description: 'Oatly oat milk, bought wrong type. Unopened. Great for coffee or cereal.', categories: ['Beverages'], dietary_tags: ['Vegan', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/almond-milk-carton.png'], original_price: 7.00, listing_price: 2.00 },
   { title: 'Frozen peas 500g', description: 'Birdseye, straight from freezer. Pick up quick! Must stay frozen during transport.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free'], storage_condition: 'frozen',
     photos: ['images/frozen-peas-and-carrots-bag.png'], original_price: 3.00, listing_price: 0 },
   { title: 'Kellogg\'s cornflakes (large box)', description: 'Bought 2 by accident, giving away the extra. Unopened, 750g box. Expires in 3 months.', categories: ['Snacks'], dietary_tags: ['Vegetarian', 'Gluten-free'], storage_condition: 'room_temperature',
     photos: ['images/cornflakes-box.png'], original_price: 8.00, listing_price: 0 },
-  { title: 'San Pellegrino × 6 cans', description: 'Sparkling water, flavoured citrus. All sealed. Mixed flavours — blood orange and lemon.', categories: ['Beverages'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
-    photos: [], original_price: 6.50, listing_price: 1.50 },
-  { title: 'Labneh tub 400g', description: 'Original Kiri labneh, refrigerated, not opened. Great with zaatar and olive oil.', categories: ['Dairy'], dietary_tags: ['Vegetarian', 'Halal', 'Gluten-free'], storage_condition: 'refrigerated',
+  { title: 'Labneh tub 400g', description: 'Original Kiri labneh, not opened. Great with zaatar and olive oil.', categories: ['Dairy'], dietary_tags: ['Vegetarian', 'Halal', 'Gluten-free'], storage_condition: 'room_temperature',
     photos: ['images/labneh.png'], original_price: 5.00, listing_price: 0 },
   { title: 'Canned tomatoes × 6', description: 'Mutti brand. Bought in bulk for a party that got cancelled. Perfect for sauces and soups.', categories: ['Canned goods'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/canned-tomatoes.png'], original_price: 9.00, listing_price: 0 },
   { title: 'Organic granola 500g', description: 'Jordans Country Crisp, sealed, expires next month. Full of oats, nuts, and honey clusters.', categories: ['Snacks'], dietary_tags: ['Vegetarian'], storage_condition: 'room_temperature',
     photos: ['images/granola-bag.png'], original_price: 12.00, listing_price: 3.00 },
-  { title: 'Hummus tub 200g (sealed)', description: 'Supermarket brand, refrigerated. Best before tomorrow — please pick up today if possible!', categories: ['Canned goods'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free'], storage_condition: 'refrigerated',
+  { title: 'Hummus tub 200g (sealed)', description: 'Supermarket brand, sealed. Best before tomorrow — please pick up today if possible!', categories: ['Canned goods'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free'], storage_condition: 'room_temperature',
     photos: ['images/hummus-tub-sealed.png'], original_price: 3.50, listing_price: 0 },
-  // restaurant extras
-  { title: 'Surplus dinner rolls × 12', description: 'Freshly baked this morning, sealed in a bag. All halal. Soft inside with a golden crust.', categories: ['Bread & bakery'], dietary_tags: ['Halal', 'Vegetarian'], storage_condition: 'room_temperature',
-    photos: [], original_price: 8.00, listing_price: 2.00 },
-  { title: 'Prepped veggie wrap kits × 4', description: 'Sealed wrap + filling pouches, made for today\'s lunch service. Includes tortilla, roasted veg, and tahini.', categories: ['Other'], dietary_tags: ['Vegetarian', 'Vegan'], storage_condition: 'refrigerated',
-    photos: [], original_price: 16.00, listing_price: 4.00 },
-  { title: 'Bottled smoothies × 8 (unsold)', description: 'Today\'s batch, never opened, cold pressed mango-ginger. Made fresh this morning at the café.', categories: ['Beverages'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'refrigerated',
+  { title: 'Bottled smoothies × 8 (unsold)', description: 'Today\'s batch, never opened, cold pressed mango-ginger. Made fresh this morning at the café.', categories: ['Beverages'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/bottled-smoothie.png'], original_price: 24.00, listing_price: 5.00 },
-  // new image listings
-  { title: 'Sliced red peppers (sealed container)', description: 'Pre-sliced red peppers in a sealed plastic container. Perfect for stir-fry or salads. Refrigerated, picked up from Spinneys today.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'refrigerated',
+  { title: 'Sliced red peppers (sealed container)', description: 'Pre-sliced red peppers in a sealed plastic container. Perfect for stir-fry or salads. Picked up from Spinneys today.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/sliced-red-peppers.jpg'], original_price: 4.00, listing_price: 0 },
   { title: 'Cherry tomatoes 500g (red)', description: 'Juicy red cherry tomatoes, still on the vine. Bought too many for the week. Great for salads or roasting.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/cherry-tomatoes-red.jpg'], original_price: 3.50, listing_price: 0 },
   { title: 'Fresh produce box (mixed)', description: 'Assorted vegetables from this morning\'s market run — we over-ordered. All fresh, nothing pre-cut.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/fresh-produce-box.jpg'], original_price: 15.00, listing_price: 3.00 },
-  { title: 'Yellow cherry tomatoes (sealed tub)', description: 'Sweet yellow cherry tomatoes in a sealed store container. Perfect for snacking or salads. Expires in 3 days.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'refrigerated',
+  { title: 'Yellow cherry tomatoes (sealed tub)', description: 'Sweet yellow cherry tomatoes in a sealed store container. Perfect for snacking or salads. Expires in 3 days.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
     photos: ['images/yellow-cherry-tomatoes.jpg'], original_price: 4.00, listing_price: 0 },
-  // extra listings
-  { title: 'Lentil soup (2 portions, sealed)', description: 'Home-cooked red lentil soup in airtight containers. Made this morning, no meat. Great reheated.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'refrigerated',
-    photos: [], original_price: 8.00, listing_price: 0 },
-  { title: 'Basmati rice 2kg (unopened)', description: 'Extra bag from bulk buy. Sealed, long shelf life. Indian gate brand.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
-    photos: [], original_price: 7.50, listing_price: 1.00 },
-  { title: 'Mixed dried fruits 300g', description: 'Sealed bag of raisins, apricots, and cranberries. Healthy snack. Best before in 2 months.', categories: ['Snacks'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
-    photos: [], original_price: 6.00, listing_price: 0 },
-  { title: 'Full-fat milk 2L (sealed)', description: 'Unopened pasteurised whole milk, best before in 5 days. Picked up two by accident.', categories: ['Dairy'], dietary_tags: ['Vegetarian', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'refrigerated',
-    photos: [], original_price: 4.00, listing_price: 0 },
-  { title: 'Protein bars × 6 (assorted)', description: 'Clif Bar assortment — chocolate chip, peanut butter, blueberry. All sealed. Bought for a trip that got cancelled.', categories: ['Snacks'], dietary_tags: ['Vegetarian'], storage_condition: 'room_temperature',
-    photos: [], original_price: 14.00, listing_price: 3.00 },
-  { title: 'Leftover mini croissants × 10', description: 'Sealed in a bakery bag from this morning. Buttery and flaky, made in-house. Please pick up today.', categories: ['Bread & bakery'], dietary_tags: ['Vegetarian'], storage_condition: 'room_temperature',
-    photos: [], original_price: 10.00, listing_price: 2.00 },
-  { title: 'Olive oil 750ml (sealed, extra virgin)', description: 'Unopened bottle of Lebanese EVOO. Bought as a gift but recipient doesn\'t cook. Best before 2027.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Gluten-free', 'Nut-free'], storage_condition: 'room_temperature',
-    photos: [], original_price: 18.00, listing_price: 5.00 },
-  { title: 'Frozen falafel balls × 20', description: 'Supermarket brand, sealed bag. Just pop in the oven. Halal certified.', categories: ['Other'], dietary_tags: ['Vegan', 'Halal', 'Nut-free'], storage_condition: 'frozen',
-    photos: [], original_price: 5.50, listing_price: 0 },
 ];
 
 const MESSAGES = [
@@ -247,7 +222,7 @@ async function run() {
   console.log('\n💬 Creating claims & messages...');
 
   const claimers = createdUsers;
-  const claimedListings = insertedListings.slice(0, 14);  // claim first 14
+  const claimedListings = insertedListings.slice(0, 6);  // claim first 6, leave rest active
   const insertedClaims = [];
 
   for (let i = 0; i < claimedListings.length; i++) {
